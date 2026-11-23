@@ -2,12 +2,13 @@
 
 // Design Ref: §5.3 화면 목록 — 오늘(/): 운동·음식 입력, 오늘 결과
 // 오늘 기록(DayRecord)을 이 화면이 들고 있고, 입력 영역들이 바꿀 때마다 저장한다.
-// (오늘 결과는 작업 11번에서 이어서 붙인다)
 import Link from "next/link";
 import { useState } from "react";
 import ExerciseSection from "@/components/ExerciseSection";
 import FoodSection from "@/components/FoodSection";
+import TodayResultCard from "@/components/TodayResultCard";
 import { useIsClient } from "@/components/useIsClient";
+import { calcTodayResult } from "@/lib/calc/today";
 import { getDateKey } from "@/lib/storage/dateKey";
 import { loadProfile } from "@/lib/storage/profile";
 import { buildDayRecord, emptyDay, getDay, saveDay } from "@/lib/storage/records";
@@ -57,6 +58,7 @@ function TodayBody({ profile }: { profile: Profile }) {
         onChange={changeExercises}
       />
       <FoodSection foods={day.foods} onChange={changeFoods} />
+      <TodayResultCard result={calcTodayResult(profile, day)} />
     </div>
   );
 }
