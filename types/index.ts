@@ -1,24 +1,28 @@
 // Design Ref: §3.1 타입 정의 — 사용자 정보와 알레르기 고정 목록
 // 화면에 보여줄 한국어 이름 표는 data/allergens.ts에 둔다. (PLAN 작업 5번에서 확정)
 
-// 알레르기 고정 목록 (식약처 알레르기 유발 식품 표시 항목을 참고한 초안)
+// 알레르기 고정 목록: 식품의약품안전처 알레르기 유발 식품 표시 대상 19개 항목 (작업 5번에서 확정)
+// 화면에 보여줄 한국어 이름은 data/allergens.ts에 있다.
 export const ALLERGEN_IDS = [
+  "egg", // 알류(가금류)
   "milk",
-  "egg",
+  "buckwheat",
   "peanut",
   "soy",
   "wheat",
-  "buckwheat",
-  "sesame",
-  "fish",
-  "shellfish",
-  "mollusk",
-  "nuts",
+  "mackerel",
+  "crab",
+  "shrimp",
   "pork",
-  "beef",
-  "chicken",
   "peach",
   "tomato",
+  "sulfites", // 아황산류
+  "walnut",
+  "chicken",
+  "beef",
+  "squid",
+  "shellfish", // 조개류(굴·전복·홍합 포함)
+  "pinenut",
 ] as const;
 export type Allergen = (typeof ALLERGEN_IDS)[number];
 

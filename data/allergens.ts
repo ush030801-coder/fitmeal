@@ -1,25 +1,29 @@
 // Design Ref: §3.3 내장 데이터 — 알레르기 고정 목록의 화면용 한국어 이름
-// 주의: 항목(16개)은 식약처 알레르기 유발 식품 표시 항목을 참고한 초안이다.
-//       PLAN 작업 5번에서 공식 목록과 대조해 확정하고, 음식별 알레르기 표시와 함께 정리한다.
+// 목록은 식품의약품안전처의 알레르기 유발 식품 표시 대상 19개 항목(조개류에 굴·전복·홍합이
+// 포함되어 흔히 "22종"이라 부른다)과 같다. 이 목록에 없는 식품(참깨, 연어, 아몬드 등)은
+// 선택 항목에 없으며, 그 알레르기가 있는 사용자는 앱이 걸러 주지 못한다.
 import { ALLERGEN_IDS, type Allergen } from "@/types";
 
 export const ALLERGEN_LABELS: Record<Allergen, string> = {
+  egg: "알류(달걀 등)",
   milk: "우유",
-  egg: "달걀",
+  buckwheat: "메밀",
   peanut: "땅콩",
   soy: "대두",
   wheat: "밀",
-  buckwheat: "메밀",
-  sesame: "참깨",
-  fish: "생선",
-  shellfish: "갑각류(새우·게 등)",
-  mollusk: "조개류·오징어",
-  nuts: "견과류(호두·잣 등)",
+  mackerel: "고등어",
+  crab: "게",
+  shrimp: "새우",
   pork: "돼지고기",
-  beef: "쇠고기",
-  chicken: "닭고기",
   peach: "복숭아",
   tomato: "토마토",
+  sulfites: "아황산류",
+  walnut: "호두",
+  chicken: "닭고기",
+  beef: "쇠고기",
+  squid: "오징어",
+  shellfish: "조개류(굴·전복·홍합 포함)",
+  pinenut: "잣",
 };
 
 // 화면에 보여줄 순서 (types의 고정 목록 순서와 같다)
