@@ -2,15 +2,16 @@
 
 // Design Ref: §5.3 화면 목록 — 오늘(/): 운동·음식 입력, 오늘 결과
 // 오늘 기록(DayRecord)을 이 화면이 들고 있고, 입력 영역들이 바꿀 때마다 저장한다.
-// (음식 입력은 작업 10번, 오늘 결과는 작업 11번에서 이어서 붙인다)
+// (오늘 결과는 작업 11번에서 이어서 붙인다)
 import Link from "next/link";
 import { useState } from "react";
 import ExerciseSection from "@/components/ExerciseSection";
+import FoodSection from "@/components/FoodSection";
 import { useIsClient } from "@/components/useIsClient";
 import { getDateKey } from "@/lib/storage/dateKey";
 import { loadProfile } from "@/lib/storage/profile";
 import { buildDayRecord, emptyDay, getDay, saveDay } from "@/lib/storage/records";
-import type { DayRecord, ExerciseEntry, Profile } from "@/types";
+import type { DayRecord, ExerciseEntry, FoodEntry, Profile } from "@/types";
 
 export default function TodayScreen() {
   const isClient = useIsClient();
@@ -41,6 +42,13 @@ function TodayBody({ profile }: { profile: Profile }) {
     return saveDay(next, { today }).ok;
   }
 
+  // 음식 목록을 바꾸고 저장한다. 저장에 성공했으면 true.
+  function changeFoods(foods: FoodEntry[]): boolean {
+    const next = buildDayRecord(today, day.exercises, foods);
+    setDay(next);
+    return saveDay(next, { today }).ok;
+  }
+
   return (
     <div className="space-y-6">
       <ExerciseSection
@@ -48,6 +56,7 @@ function TodayBody({ profile }: { profile: Profile }) {
         weightKg={profile.weightKg}
         onChange={changeExercises}
       />
+      <FoodSection foods={day.foods} onChange={changeFoods} />
     </div>
   );
 }
