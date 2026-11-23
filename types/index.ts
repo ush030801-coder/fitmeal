@@ -51,6 +51,29 @@ export type ExerciseEntry = {
   kcal: number;
 };
 
+// 오늘 입력한 음식 1건. kcal은 입력할 때 정수로 반올림해 저장한다.
+export type FoodEntry = {
+  foodId: string | null; // 목록 밖에서 직접 입력한 음식이면 null
+  name: string;
+  unit: FoodUnit; // 양의 단위 (인분 또는 g)
+  amount: number;
+  kcal: number;
+  carbs: number; // 직접 입력 음식은 0으로 계산한다
+  protein: number;
+  fat: number;
+  estimated: boolean; // true면 화면에 "추정치(±20%)" 표시
+};
+
+// 하루 기록 (기기 시간 기준 00:00~24:00). 합계는 항목 값에서 다시 계산할 수 있다.
+export type DayRecord = {
+  date: string; // "YYYY-MM-DD"
+  exercises: ExerciseEntry[];
+  foods: FoodEntry[];
+  burnedKcal: number; // 운동 소모 칼로리 합계 (정수)
+  intakeKcal: number; // 섭취 칼로리 합계 (정수)
+  proteinG: number; // 섭취 단백질 합계 (g, 소수 첫째 자리까지)
+};
+
 // 사용자 정보 (브라우저에만 저장, 이름·연락처 없음)
 export type Profile = {
   sex: Sex;
