@@ -1,5 +1,5 @@
 // Design Ref: §3.2 브라우저 저장 위치(`fitmeal:days`) / §2.2 ② — 일별 운동·식사 기록 보관
-// Plan SC: FR-07 — 최근 2일치 기록을 브라우저에 보관한다 (Nice를 만들면 보관 기간을 7일로 늘린다)
+// Plan SC: FR-07 — 최근 7일치 기록을 브라우저에 보관한다 (사용자 요청으로 기본 2일 → 7일로 변경)
 import { z } from "zod";
 import { sumBurnedKcal } from "@/lib/calc/burned";
 import {
@@ -12,7 +12,7 @@ import { addDays, getDateKey, isDateKey } from "./dateKey";
 import { getBrowserStore, type KeyValueStore } from "./store";
 
 export const DAYS_STORAGE_KEY = "fitmeal:days";
-export const DEFAULT_RETENTION_DAYS = 2; // 오늘 + 어제. Nice(과거 기록 열람)를 만들 때 7로 늘린다
+export const DEFAULT_RETENTION_DAYS = 7; // 오늘 포함 최근 7일치 보관
 const STORAGE_VERSION = 1;
 
 // ── 저장된 값이 약속한 모양인지 확인하는 검사표 ──────────────────
@@ -123,7 +123,7 @@ export function getDay(
 export type SaveOptions = {
   store?: KeyValueStore | null; // 테스트에서 가짜 저장소를 넣을 때 쓴다
   today?: string; // 기준 날짜 키 (기본: 지금 기기 날짜)
-  retentionDays?: number; // 보관 일수 (기본 2: 오늘 + 어제)
+  retentionDays?: number; // 보관 일수 (기본 7: 오늘 포함 최근 7일)
 };
 
 export type SaveResult =

@@ -102,34 +102,48 @@ describe("저장하고 읽기", () => {
   });
 });
 
-describe("보관 기간: 기본 오늘 + 어제 (최근 2일치)", () => {
-  it("오늘과 어제는 남기고 그보다 오래된 기록은 저장할 때 지운다", () => {
+describe("보관 기간: 기본 오늘 포함 최근 7일치", () => {
+  it("보관 일수를 2로 주면 오늘과 어제만 남기고 오래된 기록은 저장할 때 지운다", () => {
     const { store } = memoryStore();
     const today = "2026-11-23";
-    saveDay(sampleDay("2026-11-22"), { store, today: "2026-11-22" });
-    saveDay(sampleDay("2026-11-21"), { store, today: "2026-11-22" }); // 이때는 아직 보관 기간 안
-    saveDay(sampleDay(today), { store, today });
+    const opts = (t: string) => ({ store, today: t, retentionDays: 2 });
+    saveDay(sampleDay("2026-11-22"), opts("2026-11-22"));
+    saveDay(sampleDay("2026-11-21"), opts("2026-11-22")); // 이때는 아직 보관 기간 안
+    saveDay(sampleDay(today), opts(today));
     expect(Object.keys(loadDays(store)).sort()).toEqual(["2026-11-22", "2026-11-23"]);
   });
 
-  it("달이 바뀌는 경계에서도 맞다 (3월 1일엔 2월 28일까지 보관)", () => {
+  it("달이 바뀌는 경계에서도 맞다 (2일 보관 시 3월 1일엔 2월 28일까지)", () => {
     const { store } = memoryStore();
-    saveDay(sampleDay("2026-02-27"), { store, today: "2026-02-27" });
-    saveDay(sampleDay("2026-02-28"), { store, today: "2026-02-28" });
-    saveDay(sampleDay("2026-03-01"), { store, today: "2026-03-01" });
+    const opts = (t: string) => ({ store, today: t, retentionDays: 2 });
+    saveDay(sampleDay("2026-02-27"), opts("2026-02-27"));
+    saveDay(sampleDay("2026-02-28"), opts("2026-02-28"));
+    saveDay(sampleDay("2026-03-01"), opts("2026-03-01"));
     expect(Object.keys(loadDays(store)).sort()).toEqual(["2026-02-28", "2026-03-01"]);
   });
 
-  it("보관 기간보다 오래된 날짜는 저장하지 않는다", () => {
+  it("보관 기간보다 오래된 날짜는 저장하지 않는다 (기본 7일: 8일 전은 거절)", () => {
     const { store } = memoryStore();
-    expect(saveDay(sampleDay("2026-11-20"), { store, today: "2026-11-23" })).toEqual({
+    expect(saveDay(sampleDay("2026-11-15"), { store, today: "2026-11-23" })).toEqual({
       ok: false,
       reason: "outside_retention",
     });
     expect(loadDays(store)).toEqual({});
   });
 
-  it("보관 일수를 7로 늘리면 7일치를 남긴다 (Nice 대비)", () => {
+  it("기본값은 7일: 6일 전까지 저장되고 그 이전 기록은 지운다", () => {
+    const { store } = memoryStore();
+    for (let offset = 8; offset >= 0; offset--) {
+      const date = addDays("2026-11-23", -offset);
+      saveDay(sampleDay(date), { store, today: date });
+    }
+    const kept = Object.keys(loadDays(store)).sort();
+    expect(kept).toHaveLength(7);
+    expect(kept[0]).toBe("2026-11-17");
+    expect(kept[6]).toBe("2026-11-23");
+  });
+
+  it("보관 일수를 직접 7로 줘도 같다", () => {
     const { store } = memoryStore();
     for (let offset = 8; offset >= 0; offset--) {
       const date = addDays("2026-11-23", -offset);
