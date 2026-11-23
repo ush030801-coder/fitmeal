@@ -37,6 +37,20 @@ export type ActivityLevel = (typeof ACTIVITY_LEVELS)[number];
 export const FOOD_UNITS = ["serving", "g"] as const;
 export type FoodUnit = (typeof FOOD_UNITS)[number];
 
+// 내장 운동 목록의 한 항목 (data/exercises.ts)
+export type Exercise = {
+  id: string;
+  name: string; // 화면에 보여줄 이름 (강도·속도 포함)
+  met: number; // 운동 강도 지수 (MET)
+};
+
+// 오늘 입력한 운동 1건. kcal은 입력할 때 정수로 반올림해 저장한다.
+export type ExerciseEntry = {
+  exerciseId: string;
+  minutes: number;
+  kcal: number;
+};
+
 // 사용자 정보 (브라우저에만 저장, 이름·연락처 없음)
 export type Profile = {
   sex: Sex;
