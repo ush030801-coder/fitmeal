@@ -3,7 +3,8 @@
 // Design Ref: §5.4 내 정보 화면 — 입력 → 범위 검사 → 저장 → 권장 칼로리·탄단지 표시
 // Plan SC: 성공 기준 4 — 입력 후 권장 칼로리와 탄·단·지를 자동으로 보여 준다
 import Link from "next/link";
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { useIsClient } from "@/components/useIsClient";
 import { ALLERGEN_OPTIONS } from "@/data/allergens";
 import { calcDailyTargets, type DailyTargets } from "@/lib/calc/targets";
 import { loadProfile, saveProfile } from "@/lib/storage/profile";
@@ -57,12 +58,6 @@ function toFormState(profile: Profile | null): FormState {
     goal: profile.goal,
     allergies: profile.allergies,
   };
-}
-
-// 브라우저에서 화면이 붙은 뒤인지 (저장된 정보는 브라우저에만 있어서 그 뒤에 읽는다)
-const subscribeNothing = () => () => {};
-function useIsClient(): boolean {
-  return useSyncExternalStore(subscribeNothing, () => true, () => false);
 }
 
 export default function ProfileForm() {
