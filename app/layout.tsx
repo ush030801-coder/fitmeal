@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import ConsentGuard from "@/components/ConsentGuard";
 import DisclaimerFooter from "@/components/DisclaimerFooter";
 import SiteHeader from "@/components/SiteHeader";
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <ConsentGuard />
         <SiteHeader />
         <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
           {children}
