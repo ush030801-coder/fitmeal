@@ -22,5 +22,14 @@ export const PROTEIN_G_PER_KG = 1.6;
 export const CARB_SHARE = 0.6;
 export const FAT_SHARE = 0.4;
 
+// 내일 목표 칼로리 조정 (PRD 5번 Must 2): 초과분은 하루 최대 300kcal까지 덜어내고,
+// 부족분은 500kcal를 넘을 때만 (부족분 − 500)을 최대 300kcal까지 더한다.
+export const OVER_DEDUCT_MAX_KCAL = 300;
+export const UNDER_IGNORE_KCAL = 500;
+export const UNDER_ADD_MAX_KCAL = 300;
+
+// 식단 총합 허용 범위: 내일 목표 칼로리의 ±5%
+export const MENU_TOLERANCE = 0.05;
+
 // 영양소 1g당 칼로리 (kcal)
 export const KCAL_PER_G = { carbs: 4, protein: 4, fat: 9 } as const;
