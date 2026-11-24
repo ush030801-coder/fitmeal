@@ -168,6 +168,13 @@ describe("안내 문구는 서버가 만든다", () => {
     expect(buildNotes({ ...base, kind: "over", appliedKcal: 100, floorRaised: true }, 1500).join(" ")).toContain("1,500kcal");
   });
 
+  it("한도와 하한이 함께 걸려도 같은 이유를 두 번 말하지 않는다 (하한 안내만)", () => {
+    const notes = buildNotes({ ...base, kind: "over", appliedKcal: 62, capped: true, floorRaised: true }, 1200);
+    expect(notes.join(" ")).toContain("1,200kcal");
+    expect(notes.join(" ")).not.toContain("일부만 반영");
+    expect(notes).toHaveLength(2); // 덜어낸 양 + 하한
+  });
+
   it("반영할 게 없으면 문구도 없다", () => {
     expect(buildNotes(base, 1200)).toEqual([]);
   });

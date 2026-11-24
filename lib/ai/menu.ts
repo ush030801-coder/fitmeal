@@ -136,7 +136,8 @@ export function buildNotes(adjustment: MenuRequest["adjustment"], floorKcal: num
   } else if (adjustment.kind === "under" && adjustment.appliedKcal > 0) {
     notes.push(`오늘 많이 부족해서 내일 목표에 ${kcal(adjustment.appliedKcal)}를 더했습니다.`);
   }
-  if (adjustment.capped) {
+  // 하한 때문에 덜 덜어낸 경우는 아래 하한 안내가 이유를 설명하므로 "일부만 반영" 안내는 겹쳐 쓰지 않는다
+  if (adjustment.capped && !(adjustment.floorRaised && adjustment.kind !== "under")) {
     notes.push(
       adjustment.kind === "under"
         ? "하루에 더할 수 있는 최대 300kcal까지만 반영했습니다."
