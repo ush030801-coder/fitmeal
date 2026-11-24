@@ -232,3 +232,30 @@ describe("깨진 저장 값과 저장 실패에도 앱이 멈추지 않는다", 
     });
   });
 });
+
+describe("저장된 기록의 상한 검사 (보안 점검 SEC-008)", () => {
+  const store = () => {
+    const data: Record<string, string> = {};
+    return { getItem: (k: string) => data[k] ?? null, setItem: (k: string, v: string) => { data[k] = v; }, removeItem: (k: string) => { delete data[k]; }, data };
+  };
+  const stored = (day: unknown, date = "2026-03-03") => JSON.stringify({ version: 1, days: { [date]: day } });
+  const food = { foodId: null, name: "x", unit: "serving", amount: 1, kcal: 100, carbs: 0, protein: 0, fat: 0, estimated: true };
+
+  it("정상 범위 기록은 읽힌다", () => {
+    const s = store();
+    s.setItem("fitmeal:days", stored({ date: "2026-03-03", exercises: [], foods: [food] }));
+    expect(Object.keys(loadDays(s))).toEqual(["2026-03-03"]);
+  });
+
+  it.each([
+    ["운동 시간이 480분 초과", { exercises: [{ exerciseId: "e001", minutes: 9999, kcal: 10 }], foods: [] }],
+    ["항목 칼로리가 비정상적으로 큼", { exercises: [], foods: [{ ...food, kcal: 9_999_999 }] }],
+    ["음식 이름이 50자 초과", { exercises: [], foods: [{ ...food, name: "가".repeat(51) }] }],
+    ["음식 양이 2,000 초과", { exercises: [], foods: [{ ...food, amount: 5000 }] }],
+    ["하루 항목이 200개 초과", { exercises: [], foods: Array(201).fill(food) }],
+  ])("%s → 그날 기록은 버린다", (_name, entries) => {
+    const s = store();
+    s.setItem("fitmeal:days", stored({ date: "2026-03-03", ...entries }));
+    expect(loadDays(s)).toEqual({});
+  });
+});

@@ -8,6 +8,7 @@ import {
   type ExerciseEntry,
   type FoodEntry,
 } from "@/types";
+import { DIRECT_FOOD_NAME_MAX_LENGTH, EXERCISE_MINUTES, FOOD_GRAMS } from "@/lib/validation/limits";
 import { addDays, getDateKey, isDateKey } from "./dateKey";
 import { getBrowserStore, type KeyValueStore } from "./store";
 
@@ -17,29 +18,34 @@ const STORAGE_VERSION = 1;
 
 // ── 저장된 값이 약속한 모양인지 확인하는 검사표 ──────────────────
 
+// 저장된 값의 상한 (입력 폼의 범위를 기준으로 넉넉하게: 사람이 손으로 고친 값이 화면을 깨지 못하게 한다)
+const MAX_ENTRY_KCAL = 100_000; // 항목 1건
+const MAX_ENTRY_GRAMS = 10_000; // 탄·단·지 1건
+const MAX_ENTRIES_PER_DAY = 200; // 하루 운동·음식 항목 수
+
 const exerciseEntrySchema = z.object({
   exerciseId: z.string().min(1),
-  minutes: z.number().int().min(1),
-  kcal: z.number().int().min(0),
+  minutes: z.number().int().min(EXERCISE_MINUTES.min).max(EXERCISE_MINUTES.max),
+  kcal: z.number().int().min(0).max(MAX_ENTRY_KCAL),
 });
 
 const foodEntrySchema = z.object({
   foodId: z.string().min(1).nullable(),
-  name: z.string().min(1),
+  name: z.string().min(1).max(DIRECT_FOOD_NAME_MAX_LENGTH),
   unit: z.enum(FOOD_UNITS),
-  amount: z.number().positive(),
-  kcal: z.number().int().min(0),
-  carbs: z.number().min(0),
-  protein: z.number().min(0),
-  fat: z.number().min(0),
+  amount: z.number().positive().max(FOOD_GRAMS.max), // 인분(최대 10)·g(최대 2,000) 중 큰 쪽
+  kcal: z.number().int().min(0).max(MAX_ENTRY_KCAL),
+  carbs: z.number().min(0).max(MAX_ENTRY_GRAMS),
+  protein: z.number().min(0).max(MAX_ENTRY_GRAMS),
+  fat: z.number().min(0).max(MAX_ENTRY_GRAMS),
   estimated: z.boolean(),
 });
 
 // 합계(burnedKcal 등)는 저장된 값을 믿지 않고 항목에서 다시 계산하므로 검사하지 않는다
 const dayEntriesSchema = z.object({
   date: z.string().refine(isDateKey),
-  exercises: z.array(exerciseEntrySchema),
-  foods: z.array(foodEntrySchema),
+  exercises: z.array(exerciseEntrySchema).max(MAX_ENTRIES_PER_DAY),
+  foods: z.array(foodEntrySchema).max(MAX_ENTRIES_PER_DAY),
 });
 
 const storedFileSchema = z.object({

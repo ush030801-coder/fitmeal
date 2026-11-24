@@ -59,6 +59,18 @@ describe("POST /api/menu 남용 방지", () => {
     expect(mockedAi).not.toHaveBeenCalled();
   });
 
+  it("본문이 너무 크면 AI를 부르지 않고 413", async () => {
+    const res = await call({ ...body, padding: "x".repeat(20_000) });
+    expect(res.status).toBe(413);
+    expect(mockedAi).not.toHaveBeenCalled();
+  });
+
+  it("알레르기 배열이 비정상적으로 길면 400", async () => {
+    const res = await call({ ...body, allergies: Array(500).fill("egg") });
+    expect(res.status).toBe(400);
+    expect(mockedAi).not.toHaveBeenCalled();
+  });
+
   it("같은 사이트에서 온 요청은 통과한다", async () => {
     mockedAi.mockResolvedValue(goodAnswer);
     const res = await call(body, { Origin: "http://localhost", Host: "localhost", "Sec-Fetch-Site": "same-origin" });

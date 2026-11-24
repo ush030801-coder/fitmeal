@@ -15,6 +15,7 @@ export const menuRequestSchema = z
     targetKcal: z.number().min(1).max(MAX_TARGET_KCAL),
     allergies: z
       .array(z.enum(ALLERGEN_IDS))
+      .max(ALLERGEN_IDS.length) // 알레르기 목록은 고정이라 이보다 많을 수 없다 (거대한 배열 방지)
       .transform((items) => [...new Set(items)]),
     adjustment: z.object({
       kind: z.enum(["over", "under", "none"]),

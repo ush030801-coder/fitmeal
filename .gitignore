@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# trash-can (지울 파일을 임시로 옮겨 두는 폴더)
+/trash-can/
+
+# bkit 도구 작업 기록 (내 PC 경로·실행한 명령이 들어 있어 커밋하지 않는다)
+/.bkit/
