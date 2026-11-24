@@ -6,6 +6,7 @@ import {
   filterFoodsByAllergies,
   FOODS,
   getFoodById,
+  OFFICIAL_VALUE_NAMES,
 } from "@/data/foods";
 import { ALLERGEN_IDS } from "@/types";
 
@@ -41,6 +42,16 @@ describe("내장 음식 100가지", () => {
       if (food.kcal < 30) continue; // 아주 낮은 칼로리는 반올림 비중이 커서 제외
       expect(Math.abs(food.kcal - fromMacros) / food.kcal, food.name).toBeLessThanOrEqual(0.25);
     }
+  });
+});
+
+describe("추정치 표시", () => {
+  it("식약처 자료와 대조한 36개는 추정치가 아니고, 나머지 64개는 추정치다", () => {
+    expect(OFFICIAL_VALUE_NAMES.size).toBe(36);
+    const names = new Set(FOODS.map((f) => f.name));
+    for (const name of OFFICIAL_VALUE_NAMES) expect(names.has(name), name).toBe(true);
+    expect(FOODS.filter((f) => !f.estimated)).toHaveLength(36);
+    expect(FOODS.filter((f) => f.estimated)).toHaveLength(64);
   });
 });
 

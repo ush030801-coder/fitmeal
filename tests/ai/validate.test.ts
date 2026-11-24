@@ -15,7 +15,7 @@ const request: MenuRequest = {
 };
 
 const item = (foodId: string, kcal: number, protein: number) => ({
-  foodId, name: "x", amountText: "x", kcal, carbs: 0, protein, fat: 0,
+  foodId, name: "x", amountText: "x", kcal, carbs: 0, protein, fat: 0, estimated: false,
 });
 // 합계를 직접 정한 식단 (검증 함수만 따로 확인하려고 만든다)
 const menuOf = (kcal: number, protein: number, foodId = "f001"): { meals: Meal[]; totals: Totals } => ({

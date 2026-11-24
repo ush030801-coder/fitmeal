@@ -17,6 +17,7 @@ export type MenuItem = {
   carbs: number;
   protein: number;
   fat: number;
+  estimated: boolean; // 식약처 자료와 대조하지 못한 대략값이면 true
 };
 export type Meal = { type: MealType; items: MenuItem[] };
 export type Totals = { kcal: number; carbs: number; protein: number; fat: number };
@@ -102,6 +103,7 @@ export function buildMenu(menu: AiMenu, foodsById: ReadonlyMap<string, Food>): {
           carbs: entry.carbs,
           protein: entry.protein,
           fat: entry.fat,
+          estimated: entry.estimated,
         };
       }),
     };

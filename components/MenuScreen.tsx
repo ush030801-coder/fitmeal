@@ -14,7 +14,7 @@ import { loadProfile } from "@/lib/storage/profile";
 import { emptyDay, getDay } from "@/lib/storage/records";
 import type { Profile } from "@/types";
 
-type MenuItem = { foodId: string; name: string; amountText: string; kcal: number; carbs: number; protein: number; fat: number };
+type MenuItem = { foodId: string; name: string; amountText: string; kcal: number; carbs: number; protein: number; fat: number; estimated: boolean };
 type Meal = { type: "breakfast" | "lunch" | "dinner"; items: MenuItem[] };
 type Totals = { kcal: number; carbs: number; protein: number; fat: number };
 type MenuData = { meals: Meal[]; totals: Totals; notes: string[] };
@@ -175,7 +175,14 @@ function MenuResult({
               {meal.items.map((item) => (
                 <li key={item.foodId} className="py-2">
                   <div className="flex justify-between gap-2">
-                    <span className="font-medium">{item.name}</span>
+                    <span className="font-medium">
+                      {item.name}
+                      {item.estimated && (
+                        <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-normal text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                          추정치(±20%)
+                        </span>
+                      )}
+                    </span>
                     <span>{kcal(item.kcal)}</span>
                   </div>
                   <p className="text-sm text-zinc-600 dark:text-zinc-400">

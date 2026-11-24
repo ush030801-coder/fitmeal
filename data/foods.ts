@@ -11,7 +11,8 @@
 //    1회 제공량(g)으로 환산해 넣었다. (줄 끝의 "식약처 표준데이터" 주석이 그 표시)
 //    국물·면 음식(설렁탕·미역국·짬뽕·라면·찌개·탕 등)은 국물을 얼마나 먹느냐에 따라 달라 값을
 //    그대로 두었고, 과일·우유·닭가슴살 등 재료류와 공식 자료에 같은 음식이 없는 항목은
-//    대조하지 못했다. 이들은 여전히 대략값이다.
+//    대조하지 못했다. 이들은 여전히 대략값이라 Food.estimated = true이고 화면에 "추정치"로 표시한다.
+//    (공식 자료는 같은 이름이라도 레시피·국물 양이 제각각이라 1회 제공량과 맞추기 어려워 값을 억지로 바꾸지 않았다)
 //
 // 단위: grams = g, kcal = 킬로칼로리, carbs/protein/fat = g
 
@@ -27,6 +28,7 @@ export type Food = {
   protein: number;
   fat: number;
   allergens: Allergen[]; // 이 음식에 들어 있는 알레르기 유발 식품 (없으면 빈 목록)
+  estimated: boolean; // true면 식약처 자료와 대조하지 못한 대략값 (화면에 "추정치" 표시)
 };
 
 // [이름, 1회 제공량, 그램, kcal, 탄수화물, 단백질, 지방]
@@ -255,6 +257,47 @@ const ALLERGENS_BY_NAME: Record<string, Allergen[]> = {
   다크초콜릿: ["milk", "soy"],
 };
 
+// 식약처 표준데이터와 대조해 값을 넣은 음식 (이 목록에 없는 음식은 대략값이라 화면에 "추정치"로 표시한다)
+// 위 rows의 "식약처 표준데이터" 주석이 붙은 줄과 같다. 테스트가 개수를 확인한다.
+export const OFFICIAL_VALUE_NAMES: ReadonlySet<string> = new Set([
+  "쌀밥",
+  "현미밥",
+  "잡곡밥",
+  "김밥",
+  "비빔밥",
+  "볶음밥",
+  "오므라이스",
+  "회덮밥",
+  "흰죽",
+  "짜장면",
+  "쫄면",
+  "삼겹살구이",
+  "제육볶음",
+  "돈가스",
+  "연어구이",
+  "오징어볶음",
+  "계란후라이",
+  "삶은 계란",
+  "계란말이",
+  "두부조림",
+  "배추김치",
+  "시금치나물",
+  "콩나물무침",
+  "멸치볶음",
+  "어묵볶음",
+  "감자조림",
+  "잡채",
+  "떡볶이",
+  "순대",
+  "파전",
+  "김치전",
+  "핫도그",
+  "식빵",
+  "피자",
+  "감자튀김",
+  "닭가슴살 샐러드",
+]);
+
 export const FOODS: Food[] = rows.map(
   ([name, serving, grams, kcal, carbs, protein, fat], i) => ({
     id: `f${String(i + 1).padStart(3, "0")}`,
@@ -266,6 +309,7 @@ export const FOODS: Food[] = rows.map(
     protein,
     fat,
     allergens: ALLERGENS_BY_NAME[name] ?? [],
+    estimated: !OFFICIAL_VALUE_NAMES.has(name),
   }),
 );
 

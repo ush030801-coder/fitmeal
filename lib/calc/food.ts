@@ -25,7 +25,7 @@ export function calcFoodEntry(food: Food, unit: FoodUnit, amount: number): FoodE
     carbs: roundGram(food.carbs * ratio),
     protein: roundGram(food.protein * ratio),
     fat: roundGram(food.fat * ratio),
-    estimated: false,
+    estimated: food.estimated, // 식약처 자료와 대조하지 못한 음식은 추정치로 표시
   };
 }
 
