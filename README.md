@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 핏밀 (FitMeal)
 
-## Getting Started
+운동하는 사람을 위한 **하루 칼로리 계산 + 내일 식단 추천** 웹 앱입니다.
+오늘 운동으로 소모한 칼로리와 먹은 음식의 칼로리를 계산하고, 오늘 초과·부족분을 반영해 **내일 하루 식단(아침·점심·저녁)** 을 추천합니다.
 
-First, run the development server:
+> ⚠️ 참고용 안내이며 의료 상담을 대체하지 않습니다. 만 19세 이상 성인(임산부·수유부 제외)을 대상으로 합니다.
+
+## 주요 기능
+
+**하루 칼로리 계산**
+- 키·몸무게·나이·성별·활동량·운동 목표(체중 감량 / 근육 증가 / 체중 유지)·알레르기 입력
+- 하루 권장 칼로리와 탄수화물·단백질·지방 권장량 계산 (미플린-세인트 조르 공식, 하한 1,200kcal 여성 / 1,500kcal 남성)
+- 운동 20가지(MET 값, 2024 Adult Compendium of Physical Activities 기준)를 고르고 시간을 넣으면 소모 칼로리 계산
+- 음식 100가지(식약처 데이터 기반)를 검색해 양을 넣으면 섭취 칼로리 계산. 목록에 없으면 직접 입력(추정치로 표시)
+- 오늘의 비교 기준(기본 권장 + 운동 소모)과 견준 초과·부족 표시
+
+**내일 식단 추천**
+- 오늘 초과분은 내일 목표에서 덜어내고(최대 300kcal), 크게 부족한 날(500kcal 초과)만 조금 보충합니다
+- AI가 내장 음식 목록에서 3끼를 고르고, **서버가 칼로리·영양소를 직접 다시 계산해 검증**합니다
+  (목표 ±5% 범위, 단백질 체중 1kg당 1.6g 이상, 하한 칼로리, 알레르기 음식 제외)
+- AI가 규칙을 못 맞추면 서버가 음식은 그대로 두고 인분 수만 조정합니다
+
+**기록 (선택 기능)**
+- 최근 7일 기록을 브라우저에 보관, 과거 기록 열람·수정, 주간 요약
+
+## 설계 원칙
+- 칼로리·권장량 계산은 **코드 공식**으로 합니다. AI는 식단 추천에만 씁니다.
+- AI 숫자를 믿지 않습니다. 식단의 칼로리·영양소는 서버가 내장 데이터로 다시 계산합니다.
+- 로그인이 없고, 기록은 서버에 저장하지 않고 **브라우저에만** 보관합니다.
+- 식단 추천 시 서버로 보내는 값은 성별·몸무게·목표·알레르기·내일 목표 칼로리 등 꼭 필요한 값뿐이며, 이름·나이·키는 보내지 않습니다.
+
+## 기술 스택
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · zod · Vitest · OpenAI API(서버에서만 호출)
+
+## 직접 실행하기
 
 ```bash
+npm install
+cp .env.example .env   # 만들고 OPENAI_API_KEY 값을 채웁니다 (아래 참고)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.env`에는 아래 한 줄이 필요합니다. (이 파일은 저장소에 올라가지 않습니다)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+OPENAI_API_KEY=여기에_본인_키
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- 모델은 기본 `gpt-4.1-mini`이고, `OPENAI_MODEL` 환경 변수로 바꿀 수 있습니다.
+- 키가 없어도 칼로리 계산은 되지만 식단 추천은 "지금은 식단을 만들 수 없습니다"로 안내됩니다.
 
-## Learn More
+```bash
+npm test         # 자동 테스트
+npm run lint     # 코드 검사
+npm run build    # 배포용 빌드
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 보안·개인정보
+- AI 키는 서버 코드에서만 읽고 브라우저에 노출되지 않습니다.
+- 식단 API는 같은 사이트에서 온 JSON 요청만 받고, IP별 호출 횟수를 제한하며, 요청 크기를 제한합니다. 보안 헤더(CSP 등)를 적용했습니다.
+- 서버 로그에는 오류 코드만 남기고 입력 값과 IP는 남기지 않습니다.
+- 처음 사용할 때 외부 AI(OpenAI)로 정보가 전송된다는 안내에 동의해야 하고, 내 정보 화면에서 저장된 데이터를 모두 지울 수 있습니다.
+- 아직 개인정보 관련 법률 검토는 하지 않았습니다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 알려진 한계
+- 음식 100가지 중 36가지만 식약처 표준데이터와 대조한 공식값이고, 나머지 64가지는 대략값이라 화면에 "추정치(±20%)"로 표시됩니다.
+- 알레르기는 식약처 표시 대상 19가지에서만 고를 수 있습니다. 참깨·연어·아몬드 등은 걸러지지 않습니다.
+- 호출 횟수 제한은 서버 메모리 방식이라 배포 환경에서는 기본적인 방어 수준입니다.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 문서
+- [PRD.md](PRD.md) — 기획서 (문제 정의, 기능, 규칙, 성공 기준)
+- [PLAN.md](PLAN.md) — 계획서 (범위, 요구사항, 작업 순서, 위험)
+- [DESIGN.md](DESIGN.md) — 설계서 (화면, 데이터 흐름, API, 테스트)
+- [CLAUDE.md](CLAUDE.md) — 프로젝트 작업 규칙
