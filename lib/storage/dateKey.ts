@@ -25,3 +25,10 @@ export function addDays(dateKey: string, days: number): string {
   const [year, month, day] = dateKey.split("-").map(Number);
   return getDateKey(new Date(year, month - 1, day + days));
 }
+
+// "2026-03-03" → "3/3(화)" (날짜 키 자체로 요일을 구한다)
+export function formatDateLabel(dateKey: string): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const weekday = ["일", "월", "화", "수", "목", "금", "토"][new Date(year, month - 1, day).getDay()];
+  return `${month}/${day}(${weekday})`;
+}

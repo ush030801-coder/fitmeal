@@ -18,6 +18,7 @@ import type { FoodEntry, FoodUnit } from "@/types";
 
 type Props = {
   foods: FoodEntry[];
+  dayLabel?: string; // 제목에 쓰는 날짜 이름 (기본 "오늘", 과거 기록 화면에서는 그 날짜)
   // 음식 목록을 바꿀 때 부른다. 브라우저에 저장했으면 true.
   onChange: (foods: FoodEntry[]) => boolean;
 };
@@ -32,7 +33,7 @@ function toNumber(text: string): number | undefined {
   return trimmed === "" ? undefined : Number(trimmed);
 }
 
-export default function FoodSection({ foods, onChange }: Props) {
+export default function FoodSection({ foods, dayLabel = "오늘", onChange }: Props) {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Food | null>(null);
   const [unit, setUnit] = useState<FoodUnit>("serving");
@@ -137,7 +138,7 @@ export default function FoodSection({ foods, onChange }: Props) {
 
   return (
     <section className="space-y-4 rounded-lg border border-zinc-300 p-4 dark:border-zinc-700">
-      <h2 className="text-lg font-semibold">오늘 먹은 음식</h2>
+      <h2 className="text-lg font-semibold">{dayLabel} 먹은 음식</h2>
 
       {directMode ? (
         <form onSubmit={handleAddDirect} noValidate className="space-y-3">
@@ -343,7 +344,7 @@ export default function FoodSection({ foods, onChange }: Props) {
         </ul>
       )}
 
-      <p className="font-semibold">오늘 섭취 합계: {totalKcal.toLocaleString("ko-KR")}kcal</p>
+      <p className="font-semibold">{dayLabel} 섭취 합계: {totalKcal.toLocaleString("ko-KR")}kcal</p>
     </section>
   );
 }

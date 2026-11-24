@@ -5,18 +5,10 @@
 import Link from "next/link";
 import { useIsClient } from "@/components/useIsClient";
 import { calcWeeklySummary } from "@/lib/calc/weekly";
-import { getDateKey } from "@/lib/storage/dateKey";
+import { formatDateLabel, getDateKey } from "@/lib/storage/dateKey";
 import { loadDays } from "@/lib/storage/records";
 
 const kcal = (value: number) => `${value.toLocaleString("ko-KR")}kcal`;
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
-
-// "2026-03-03" → "3/3(화)" (기기 시간이 아니라 날짜 키 자체로 요일을 구한다)
-function labelOf(date: string): string {
-  const [y, m, d] = date.split("-").map(Number);
-  return `${m}/${d}(${WEEKDAYS[new Date(y, m - 1, d).getDay()]})`;
-}
-
 export default function WeeklyScreen() {
   const isClient = useIsClient();
   if (!isClient) return <p className="text-zinc-500">불러오는 중…</p>;
@@ -47,7 +39,7 @@ export default function WeeklyScreen() {
         <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
           {summary.days.map((d) => (
             <li key={d.date} className="flex justify-between gap-2 py-2">
-              <span>{labelOf(d.date)}</span>
+              <span>{formatDateLabel(d.date)}</span>
               {d.hasRecord ? (
                 <span className="text-sm">
                   소모 {kcal(d.burnedKcal)} · 섭취 {kcal(d.intakeKcal)}

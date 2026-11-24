@@ -15,6 +15,7 @@ import type { ExerciseEntry } from "@/types";
 type Props = {
   exercises: ExerciseEntry[];
   weightKg: number;
+  dayLabel?: string; // 제목에 쓰는 날짜 이름 (기본 "오늘", 과거 기록 화면에서는 그 날짜)
   // 운동 목록을 바꿀 때 부른다. 브라우저에 저장했으면 true.
   onChange: (exercises: ExerciseEntry[]) => boolean;
 };
@@ -22,7 +23,7 @@ type Props = {
 const inputClass =
   "w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 dark:border-zinc-700";
 
-export default function ExerciseSection({ exercises, weightKg, onChange }: Props) {
+export default function ExerciseSection({ exercises, weightKg, dayLabel = "오늘", onChange }: Props) {
   const [exerciseId, setExerciseId] = useState(EXERCISES[0].id);
   const [minutesText, setMinutesText] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -87,7 +88,7 @@ export default function ExerciseSection({ exercises, weightKg, onChange }: Props
 
   return (
     <section className="space-y-4 rounded-lg border border-zinc-300 p-4 dark:border-zinc-700">
-      <h2 className="text-lg font-semibold">오늘의 운동</h2>
+      <h2 className="text-lg font-semibold">{dayLabel}의 운동</h2>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-3">
         <div>
@@ -191,7 +192,7 @@ export default function ExerciseSection({ exercises, weightKg, onChange }: Props
       )}
 
       <p className="font-semibold">
-        오늘 운동 소모 합계: {totalBurned.toLocaleString("ko-KR")}kcal
+        {dayLabel} 운동 소모 합계: {totalBurned.toLocaleString("ko-KR")}kcal
       </p>
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         소모 칼로리는 공식 기준값으로 계산한 추정치라 실제와 약 ±10% 차이가 날 수 있습니다.
