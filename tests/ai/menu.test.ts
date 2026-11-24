@@ -109,7 +109,9 @@ describe("AI 답변 모양 검사", () => {
     expect(parseAiMenu(JSON.stringify(five), candidateIds)).toMatchObject({ ok: false });
     const same = { meals: [meal("breakfast", ["f001", 1], ["f001", 1]), goodMenu.meals[1], goodMenu.meals[2]] };
     expect(parseAiMenu(JSON.stringify(same), candidateIds)).toMatchObject({ ok: false });
-    const step = { meals: [meal("breakfast", ["f001", 1.3]), goodMenu.meals[1], goodMenu.meals[2]] };
+    const ok = { meals: [meal("breakfast", ["f001", 1.3]), goodMenu.meals[1], goodMenu.meals[2]] };
+    expect(parseAiMenu(JSON.stringify(ok), candidateIds).ok).toBe(true); // 0.1 단위는 허용
+    const step = { meals: [meal("breakfast", ["f001", 1.25]), goodMenu.meals[1], goodMenu.meals[2]] };
     expect(parseAiMenu(JSON.stringify(step), candidateIds)).toMatchObject({ ok: false });
     const range = { meals: [meal("breakfast", ["f001", 5]), goodMenu.meals[1], goodMenu.meals[2]] };
     expect(parseAiMenu(JSON.stringify(range), candidateIds)).toMatchObject({ ok: false });

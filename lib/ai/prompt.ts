@@ -8,7 +8,7 @@ import type { MenuRequest } from "./request";
 
 export const SERVING_MIN = 0.5;
 export const SERVING_MAX = 3;
-export const SERVING_STEP = 0.5;
+export const SERVING_STEP = 0.1; // 좁은 칼로리 범위(±5%)를 맞추려면 0.5 단위는 너무 거칠다
 
 // 사용자의 알레르기가 들어 있는 음식을 뺀 후보 목록
 export function buildCandidates(allergies: MenuRequest["allergies"]): Food[] {
@@ -51,7 +51,7 @@ export const MENU_JSON_SCHEMA = {
   },
 } as const;
 
-export type ChatMessage = { role: "system" | "user"; content: string };
+export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
 // 식단 요청에 쓰는 기준값 (칼로리 허용 범위, 단백질 최소량)
 export function menuTargets(request: MenuRequest) {
@@ -78,10 +78,10 @@ export function buildMessages(request: MenuRequest, candidates: readonly Food[])
     "너는 한국 음식으로 하루 식단을 짜 주는 영양 식단 도우미다.",
     "아래 '후보 음식 목록'에 있는 음식의 foodId만 사용해서 내일 하루의 아침(breakfast)·점심(lunch)·저녁(dinner) 식단을 만든다.",
     "반드시 지킬 규칙:",
-    `1. 하루 총 칼로리(후보 목록의 kcal × 인분 수의 합)는 ${t.minKcal}kcal 이상 ${t.maxKcal}kcal 이하여야 한다. 목표는 ${request.targetKcal}kcal이다.`,
-    `2. 하루 총 단백질은 ${t.minProteinG}g 이상이어야 한다.`,
+    `1. 하루 총 칼로리(후보 목록의 kcal × 인분 수의 합)는 ${t.minKcal}kcal 이상 ${t.maxKcal}kcal 이하여야 한다. 목표는 ${request.targetKcal}kcal이므로 가능하면 목표 ±2% 안(범위의 가운데)을 노린다. 답하기 전에 음식마다 kcal × 인분 수를 더해 합계를 직접 확인한다.`,
+    `2. 하루 총 단백질(후보 목록의 단백질g × 인분 수의 합)은 ${t.minProteinG}g 이상이어야 한다.`,
     "3. 후보 목록에 없는 foodId는 절대 쓰지 않는다. 이름을 지어내지 않는다.",
-    `4. 음식마다 servings(인분 수)는 ${SERVING_MIN}~${SERVING_MAX} 사이이고 ${SERVING_STEP} 단위로 적는다. 후보 목록의 kcal·영양소는 1인분 기준이다.`,
+    `4. 음식마다 servings(인분 수)는 ${SERVING_MIN}~${SERVING_MAX} 사이이고 소수 첫째 자리까지만 쓴다(예: 0.5, 1, 1.3). 후보 목록의 kcal·영양소는 1인분 기준이다. 칼로리를 미세하게 맞출 때는 인분 수를 조금씩 조절한다.`,
     "5. 아침·점심·저녁 3끼를 모두 만들고, 끼니마다 음식 1~4개를 넣는다. 같은 끼니 안에서 같은 음식을 두 번 쓰지 않는다.",
     "6. 한국인이 한 끼에 실제로 먹을 만한 조합으로 구성한다. (예: 밥 + 국/찌개 + 반찬)",
     "답변은 지정된 JSON 형식으로만 한다. 설명 문장은 쓰지 않는다.",
