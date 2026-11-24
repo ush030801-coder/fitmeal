@@ -6,6 +6,7 @@ import Link from "next/link";
 const MENU_ITEMS = [
   { label: "오늘", href: "/" },
   { label: "내일 식단", href: "/menu" },
+  { label: "주간", href: "/weekly" },
   { label: "내 정보", href: "/profile" },
 ] as const;
 
