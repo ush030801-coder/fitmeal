@@ -9,6 +9,7 @@ vi.mock("@/lib/ai/client", async () => {
 import { POST } from "@/app/api/menu/route";
 import { AiMisconfiguredError, AiUnavailableError, requestMenuText } from "@/lib/ai/client";
 import { FOODS } from "@/data/foods";
+import { RATE_LIMITS, resetRateLimit } from "@/lib/ai/guard";
 
 const mockedAi = vi.mocked(requestMenuText);
 
@@ -16,8 +17,12 @@ const body = {
   sex: "female", weightKg: 60, goal: "lose", targetKcal: 1650, allergies: ["egg"],
   adjustment: { kind: "over", appliedKcal: 250, capped: false, floorRaised: false, noRecord: false },
 };
-const call = (payload: unknown) =>
-  POST(new Request("http://localhost/api/menu", { method: "POST", body: typeof payload === "string" ? payload : JSON.stringify(payload) }));
+const call = (payload: unknown, headers: Record<string, string> = {}) =>
+  POST(new Request("http://localhost/api/menu", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...headers },
+    body: typeof payload === "string" ? payload : JSON.stringify(payload),
+  }));
 
 const meal = (type: string, ...items: [string, number][]) => ({
   type, items: items.map(([foodId, servings]) => ({ foodId, servings })),
@@ -35,7 +40,45 @@ const lowAnswer = JSON.stringify({
   meals: [meal("breakfast", ["f001", 1]), meal("lunch", ["f001", 1]), meal("dinner", ["f001", 1])],
 });
 
-afterEach(() => mockedAi.mockReset());
+afterEach(() => {
+  mockedAi.mockReset();
+  resetRateLimit();
+});
+
+describe("POST /api/menu 남용 방지", () => {
+  it("JSON이 아닌 형식(text/plain 등)은 AI를 부르지 않고 415", async () => {
+    const res = await call(body, { "Content-Type": "text/plain" });
+    expect(res.status).toBe(415);
+    expect((await res.json()).error.code).toBe("UNSUPPORTED_MEDIA_TYPE");
+    expect(mockedAi).not.toHaveBeenCalled();
+  });
+
+  it("다른 사이트에서 온 요청(Origin·Sec-Fetch-Site)은 403", async () => {
+    expect((await call(body, { Origin: "https://evil.example", Host: "localhost" })).status).toBe(403);
+    expect((await call(body, { "Sec-Fetch-Site": "cross-site" })).status).toBe(403);
+    expect(mockedAi).not.toHaveBeenCalled();
+  });
+
+  it("같은 사이트에서 온 요청은 통과한다", async () => {
+    mockedAi.mockResolvedValue(goodAnswer);
+    const res = await call(body, { Origin: "http://localhost", Host: "localhost", "Sec-Fetch-Site": "same-origin" });
+    expect(res.status).toBe(200);
+  });
+
+  it("같은 IP가 1분에 한도를 넘으면 429와 Retry-After, AI는 한도까지만 부른다", async () => {
+    mockedAi.mockResolvedValue(goodAnswer);
+    for (let i = 0; i < RATE_LIMITS.perMinute; i++) {
+      expect((await call(body, { "x-forwarded-for": "1.2.3.4" })).status).toBe(200);
+    }
+    const res = await call(body, { "x-forwarded-for": "1.2.3.4" });
+    expect(res.status).toBe(429);
+    expect(Number(res.headers.get("Retry-After"))).toBeGreaterThan(0);
+    expect((await res.json()).error.code).toBe("TOO_MANY_REQUESTS");
+    expect(mockedAi).toHaveBeenCalledTimes(RATE_LIMITS.perMinute);
+    // 다른 IP는 영향 없다
+    expect((await call(body, { "x-forwarded-for": "5.6.7.8" })).status).toBe(200);
+  });
+});
 
 describe("POST /api/menu", () => {
   it("정상: 3끼와 합계, 서버가 만든 안내 문구를 돌려준다 (AI 1회)", async () => {

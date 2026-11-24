@@ -3,7 +3,8 @@
 import { getBrowserStore, type KeyValueStore } from "./store";
 
 export const CONSENT_STORAGE_KEY = "fitmeal:consent";
-const CONSENT_VERSION = 1;
+// 동의 문구가 바뀌면 올려서 다시 동의를 받는다 (2: 서버·OpenAI 전송 구분, 국외 이전·보관 고지 추가)
+const CONSENT_VERSION = 2;
 
 // 동의했는지 읽는다. 저장소를 쓸 수 없거나 값이 깨졌으면 "동의 안 함"으로 본다.
 export function hasConsent(

@@ -10,6 +10,7 @@ import type { MenuRequest } from "@/lib/ai/request";
 import { calcTodayResult } from "@/lib/calc/today";
 import { calcTomorrowTarget } from "@/lib/calc/tomorrow";
 import { getDateKey } from "@/lib/storage/dateKey";
+import { hasConsent } from "@/lib/storage/consent";
 import { loadProfile } from "@/lib/storage/profile";
 import { emptyDay, getDay } from "@/lib/storage/records";
 import type { Profile } from "@/types";
@@ -26,6 +27,7 @@ type State =
 
 const MEAL_LABEL: Record<Meal["type"], string> = { breakfast: "아침", lunch: "점심", dinner: "저녁" };
 const kcal = (value: number) => `${value.toLocaleString("ko-KR")}kcal`;
+const TOO_MANY_MESSAGE = "요청이 너무 많습니다. 잠시 뒤에 다시 시도해 주세요.";
 const FAIL_MESSAGE = "지금은 식단을 만들 수 없습니다. 잠시 뒤에 다시 시도해 주세요.";
 // 서버는 AI를 최대 2번(1번에 20초까지) 부르므로 화면은 그보다 조금 더 기다린다
 const CLIENT_TIMEOUT_MS = 50_000;
@@ -33,6 +35,18 @@ const CLIENT_TIMEOUT_MS = 50_000;
 export default function MenuScreen() {
   const isClient = useIsClient();
   if (!isClient) return <p className="text-zinc-500">불러오는 중…</p>;
+
+  // 동의 없이는 서버로 아무것도 보내지 않는다 (동의 화면으로 가는 ConsentGuard보다 먼저 확인)
+  if (!hasConsent()) {
+    return (
+      <div className="space-y-3 rounded-lg border border-zinc-300 p-4 dark:border-zinc-700">
+        <p>식단 추천에는 외부 AI 서비스 사용에 대한 동의가 필요합니다.</p>
+        <Link href="/consent" className="font-medium text-emerald-700 underline dark:text-emerald-400">
+          안내를 확인하고 동의하러 가기
+        </Link>
+      </div>
+    );
+  }
 
   const profile = loadProfile();
   if (!profile) {
@@ -83,13 +97,15 @@ function MenuBody({ profile }: { profile: Profile }) {
       signal: controller.signal,
     })
       .then(async (res) => {
+        if (res.status === 429) throw new Error("too_many");
         if (!res.ok) throw new Error("failed");
         const data = (await res.json()) as MenuData;
         setState({ status: "done", data });
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (leftScreen) return;
-        setState({ status: "error", message: FAIL_MESSAGE });
+        const tooMany = error instanceof Error && error.message === "too_many";
+        setState({ status: "error", message: tooMany ? TOO_MANY_MESSAGE : FAIL_MESSAGE });
       })
       .finally(() => clearTimeout(timer));
     return () => {
