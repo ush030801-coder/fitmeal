@@ -120,6 +120,10 @@ export function buildMenu(menu: AiMenu, foodsById: ReadonlyMap<string, Food>): {
   };
 }
 
+// 서버가 인분 수를 조정했을 때 붙이는 안내 문구
+export const ADJUSTED_NOTE =
+  "내일 목표 칼로리와 단백질 기준에 맞도록 음식의 양을 조금 조정했습니다.";
+
 // 안내 문구는 AI가 아니라 서버가 adjustment 값으로 만든다
 export function buildNotes(adjustment: MenuRequest["adjustment"], floorKcal: number): string[] {
   const notes: string[] = [];

@@ -1,7 +1,7 @@
 // Design Ref: §4.2 POST /api/menu — 내일 식단 추천
 // Plan SC: PLAN 작업 13번 / FR-06 — AI는 알레르기를 뺀 내장 목록에서만 고르고, 숫자는 서버가 계산한다
 // 작업 14번: AI 식단을 서버에서 검증(허용 범위·하한·단백질·알레르기)하고 어긋나면 한 번 더 요청한다
-import { buildNotes } from "@/lib/ai/menu";
+import { ADJUSTED_NOTE, buildNotes } from "@/lib/ai/menu";
 import { recommendMenu } from "@/lib/ai/recommend";
 import { parseMenuRequest } from "@/lib/ai/request";
 import { minKcalFor } from "@/lib/calc/recommend";
@@ -48,6 +48,7 @@ export async function POST(request: Request) {
       return errorResponse("MENU_RULE_VIOLATION");
     }
     const notes = buildNotes(menuRequest.adjustment, minKcalFor(menuRequest.sex));
+    if (result.adjusted) notes.push(ADJUSTED_NOTE);
     return Response.json({ meals: result.meals, totals: result.totals, notes });
   } catch {
     return errorResponse("INTERNAL_ERROR");
