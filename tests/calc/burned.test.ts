@@ -31,11 +31,11 @@ describe("소모 칼로리 계산 (MET × 체중 × 시간)", () => {
 describe("손계산 비교 5개 조합 (오차 ±10% 이내)", () => {
   // [운동 id, 체중(kg), 시간(분), 손계산한 소모 칼로리(kcal)]
   const cases: Array<[string, number, number, number]> = [
-    ["e002", 50, 30, 87.5], // 걷기(보통) 3.5 × 50 × 0.5
-    ["e004", 60, 30, 249], // 달리기 8.3 × 60 × 0.5
+    ["e002", 50, 30, 95], // 걷기(보통) 3.8 × 50 × 0.5
+    ["e004", 60, 30, 255], // 달리기 8.5 × 60 × 0.5
     ["e009", 70, 60, 476], // 자전거(보통) 6.8 × 70 × 1
     ["e010", 80, 45, 348], // 수영(가볍게) 5.8 × 80 × 0.75
-    ["e012", 90, 40, 210], // 웨이트(가볍게~보통) 3.5 × 90 × 40/60
+    ["e012", 90, 40, 210], // 웨이트(여러 동작) 3.5 × 90 × 40/60
   ];
 
   it.each(cases)("%s / %ikg / %i분 → 손계산 %f", (id, weightKg, minutes, expected) => {
@@ -52,16 +52,16 @@ describe("운동 1건 기록 만들기와 하루 합계", () => {
     expect(calcExerciseEntry(walking, 30, 60)).toEqual({
       exerciseId: "e002",
       minutes: 30,
-      kcal: 105,
+      kcal: 114,
     });
   });
 
   it("하루 합계는 항목별 정수의 합이다", () => {
     const entries = [
-      { exerciseId: "e002", minutes: 30, kcal: 105 },
-      { exerciseId: "e004", minutes: 20, kcal: 166 },
+      { exerciseId: "e002", minutes: 30, kcal: 114 },
+      { exerciseId: "e004", minutes: 20, kcal: 170 },
     ];
-    expect(sumBurnedKcal(entries)).toBe(271);
+    expect(sumBurnedKcal(entries)).toBe(284);
     expect(sumBurnedKcal([])).toBe(0);
   });
 });
@@ -85,7 +85,13 @@ describe("내장 운동 데이터", () => {
     expect(getExerciseById("e999")).toBeUndefined();
   });
 
-  it("기준표의 판은 아직 확정 전이다 (대조를 끝내면 이 테스트를 고친다)", () => {
-    expect(MET_TABLE_EDITION).toBeNull();
+  it("기준표는 2024 Adult Compendium이다", () => {
+    expect(MET_TABLE_EDITION).toBe("2024");
+  });
+
+  // 공식 표(pacompendium.com)의 코드별 MET와 20개 모두 일치하는지 확인한다
+  it("모든 MET 값이 2024 기준표 값과 일치한다", () => {
+    const official = [2.8, 3.8, 5.5, 8.5, 9.3, 11.0, 6.0, 4.0, 6.8, 5.8, 9.8, 3.5, 6.0, 2.3, 2.8, 7.3, 11.8, 7.0, 6.0, 4.0];
+    expect(EXERCISES.map((e) => e.met)).toEqual(official);
   });
 });
